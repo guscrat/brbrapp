@@ -1,16 +1,15 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
-from .models import Servico, HorarioDisponivel, Agendamento
-from .serializers import ServicoSerializer, HorarioDisponivelSerializer, AgendamentoSerializer
-
-class ServicoListCreateView(generics.ListCreateAPIView):
-    queryset = Servico.objects.all()
-    serializer_class = ServicoSerializer
-
-class HorarioDisponivelListCreateView(generics.ListCreateAPIView):
-    queryset = HorarioDisponivel.objects.all()
-    serializer_class = HorarioDisponivelSerializer
+from .models import Agendamento
+from .serializers import AgendamentoSerializer
 
 class AgendamentoListCreateView(generics.ListCreateAPIView):
     queryset = Agendamento.objects.all()
     serializer_class = AgendamentoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Agendamento.objects.filter(cliente=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(cliente=self.request.user)
