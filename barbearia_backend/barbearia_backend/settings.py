@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'users',
     'agendamentos',
     'pagamentos',
+    'core'
 ]
 
 MIDDLEWARE = [
