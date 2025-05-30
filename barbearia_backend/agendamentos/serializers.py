@@ -1,5 +1,6 @@
+from users.serializers import UserSerializer  
 from rest_framework import serializers
-from .models import Servico, HorarioDisponivel, Agendamento
+from .models import Servico, HorarioDisponivel, Agendamento, Pagamento
 
 class ServicoSerializer(serializers.ModelSerializer):
     preco_formatado = serializers.SerializerMethodField()
@@ -53,10 +54,6 @@ class AgendamentoSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Este horário já está ocupado.")
         return value
 
-# pagamentos/serializers.py  
-from rest_framework import serializers
-from .models import Pagamento
-
 class PagamentoSerializer(serializers.ModelSerializer):
     cliente_nome = serializers.CharField(source='agendamento.cliente.get_full_name', read_only=True)
     servico_nome = serializers.CharField(source='agendamento.servico.nome', read_only=True)
@@ -73,3 +70,47 @@ class PagamentoSerializer(serializers.ModelSerializer):
     
     def get_valor_formatado(self, obj):
         return f"R$ {obj.valor:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    
+class MeuAgendamentoDetailSerializer(serializers.ModelSerializer):
+    servico = ServicoSerializer(read_only=True)
+    barbeiro = serializers.SerializerMethodField()
+    data_hora = serializers.SerializerMethodField()
+    status_pagamento = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Agendamento
+        fields = [
+            'id',
+            'servico',
+            'barbeiro',
+            'data_hora',
+            'confirmado',
+            'status_pagamento',
+            'criado_em'
+        ]
+
+        def get_barbeiro(self, obj):
+            """Retorna os dados do barbeiro"""
+            barbeiro = obj.horario.barbeiro
+            return {
+                'id': barbeiro.id,
+                'nome': barbeiro.get_full_name() or barbeiro.username
+            }
+        
+        def get_data_hora(self, obj):
+            """Retorna data e hora formatadas"""
+            return {
+                'data': obj.horario.data.strftime('%d/%m/%Y'),
+                'hora': obj.horario.data.strftime('%H:%M'),
+                'dia_semana': obj.horario.data.strftime('%A')
+            }
+        
+        def get_status_pagamento(self, obj):
+            """Verifica se existe pagamento"""
+            if hasattr(obj, 'pagamento'):
+                return {
+                    'status': obj.pagamento.status,
+                    'metodo': obj.pagamento.metodo,
+                    'valors': str(obj.pagamento.valor)
+                }
+            return {'status': 'sem_pagamento'}
