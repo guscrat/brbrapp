@@ -114,3 +114,5 @@ class MeuAgendamentoDetailSerializer(serializers.ModelSerializer):
                     'valors': str(obj.pagamento.valor)
                 }
             return {'status': 'sem_pagamento'}
+
+###
