@@ -80,4 +80,8 @@ class AgendamentoAdmin(admin.ModelAdmin):
     def cancelar_confirmacao(self, request, queryset):
         updated = queryset.update(confirmado=False)
         self.message_user(request, f'{updated} agendamento(s) com confirmação cancelada.')
+<<<<<<< HEAD
     cancelar_confirmacao.short_description = "Cancelar confirmação dos selecionados"
+=======
+    cancelar_confirmacao.short_description = "Cancelar confirmação dos selecionados"
+>>>>>>> 8dca1b1 (last alt)
